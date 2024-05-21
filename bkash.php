@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class BkashPGW {
-    private $baseUrl = 'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/';
+    private $baseUrl = 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/';
     private $appKey = 'YOUR_APP_KEY';
     private $appSecret = 'YOUR_APP_SECRET';
     private $username = 'YOUR_USERNAME';
