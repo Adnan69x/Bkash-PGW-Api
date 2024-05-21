@@ -28,7 +28,9 @@ class BkashPGW {
         add_action('admin_menu', array($this, 'create_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         $this->load_settings();
-        $this->grantToken();
+        if ($this->username && $this->password && $this->appKey && $this->appSecret) {
+            $this->grantToken();
+        }
     }
 
     public function create_admin_menu() {
@@ -49,6 +51,7 @@ class BkashPGW {
         register_setting('bkash-pgw-settings-group', 'bkash_password');
         register_setting('bkash-pgw-settings-group', 'bkash_app_key');
         register_setting('bkash-pgw-settings-group', 'bkash_app_secret');
+        register_setting('bkash-pgw-settings-group', 'bkash_id_token');
     }
 
     private function load_settings() {
@@ -58,6 +61,7 @@ class BkashPGW {
         $this->password = get_option('bkash_password');
         $this->appKey = get_option('bkash_app_key');
         $this->appSecret = get_option('bkash_app_secret');
+        $this->token = get_option('bkash_id_token');
     }
 
     public function admin_page() {
@@ -91,6 +95,10 @@ class BkashPGW {
                     <tr valign="top">
                         <th scope="row">App Secret</th>
                         <td><input type="text" name="bkash_app_secret" value="<?php echo esc_attr(get_option('bkash_app_secret')); ?>" /></td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">ID Token</th>
+                        <td><input type="text" name="bkash_id_token" value="<?php echo esc_attr(get_option('bkash_id_token')); ?>" readonly /></td>
                     </tr>
                 </table>
                 <?php submit_button(); ?>
@@ -140,6 +148,7 @@ class BkashPGW {
 
         $responseData = json_decode($response, true);
         $this->token = $responseData['id_token'];
+        update_option('bkash_id_token', $this->token);
     }
 
     public function createPayment($amount, $currency = 'BDT') {
@@ -196,6 +205,7 @@ class BkashPGW {
 
         $responseData = json_decode($response, true);
         $this->token = $responseData['id_token'];
+        update_option('bkash_id_token', $this->token);
     }
 }
 
