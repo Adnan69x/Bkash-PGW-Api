@@ -1,4 +1,18 @@
 <?php
+/*
+Plugin Name: bKash PGW
+Plugin URI:  http://example.com/bkash-pgw
+Description: A plugin to integrate bKash PGW with WordPress.
+Version:     1.0
+Author:      Your Name
+Author URI:  http://example.com
+License:     GPL2
+*/
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 class BkashPGW {
     private $baseUrl = 'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/';
     private $appKey = 'YOUR_APP_KEY';
@@ -8,7 +22,26 @@ class BkashPGW {
     private $token;
 
     public function __construct() {
+        add_action('admin_menu', array($this, 'create_admin_menu'));
         $this->grantToken();
+    }
+
+    public function create_admin_menu() {
+        add_menu_page(
+            'bKash PGW',
+            'bKash PGW',
+            'manage_options',
+            'bkash-pgw',
+            array($this, 'admin_page'),
+            'dashicons-admin-generic'
+        );
+    }
+
+    public function admin_page() {
+        echo '<div class="wrap">';
+        echo '<h1>bKash PGW Settings</h1>';
+        // Add your settings form here
+        echo '</div>';
     }
 
     private function request($url, $method = 'POST', $data = null) {
@@ -107,8 +140,6 @@ class BkashPGW {
     }
 }
 
-// Usage example:
-$bkash = new BkashPGW();
-$response = $bkash->createPayment(100.00);
-print_r($response);
+// Initialize the plugin
+$bkashPGW = new BkashPGW();
 ?>
