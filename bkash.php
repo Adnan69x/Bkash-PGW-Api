@@ -9,7 +9,7 @@ Author URI:  http://example.com
 License:     GPL2
 */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
@@ -103,6 +103,36 @@ class BkashPGW {
                 </table>
                 <?php submit_button(); ?>
             </form>
+
+            <h2>Create Payment</h2>
+            <form method="post" action="">
+                <input type="number" name="bkash_payment_amount" placeholder="Amount" required>
+                <input type="text" name="bkash_payment_currency" placeholder="Currency" value="BDT" required>
+                <button type="submit" name="bkash_create_payment">Create Payment</button>
+            </form>
+
+            <?php
+            if (isset($_POST['bkash_create_payment'])) {
+                $amount = sanitize_text_field($_POST['bkash_payment_amount']);
+                $currency = sanitize_text_field($_POST['bkash_payment_currency']);
+                $paymentResponse = $this->createPayment($amount, $currency);
+                echo '<pre>' . print_r($paymentResponse, true) . '</pre>';
+            }
+            ?>
+
+            <h2>Execute Payment</h2>
+            <form method="post" action="">
+                <input type="text" name="bkash_payment_id" placeholder="Payment ID" required>
+                <button type="submit" name="bkash_execute_payment">Execute Payment</button>
+            </form>
+
+            <?php
+            if (isset($_POST['bkash_execute_payment'])) {
+                $paymentID = sanitize_text_field($_POST['bkash_payment_id']);
+                $executeResponse = $this->executePayment($paymentID);
+                echo '<pre>' . print_r($executeResponse, true) . '</pre>';
+            }
+            ?>
         </div>
         <?php
     }
@@ -112,6 +142,10 @@ class BkashPGW {
     }
 
     private function request($url, $method = 'POST', $data = null) {
+        if (!$this->token) {
+            $this->grantToken();
+        }
+
         $ch = curl_init($this->getBaseUrl() . $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
@@ -147,8 +181,12 @@ class BkashPGW {
         curl_close($ch);
 
         $responseData = json_decode($response, true);
-        $this->token = $responseData['id_token'];
-        update_option('bkash_id_token', $this->token);
+        if (isset($responseData['id_token'])) {
+            $this->token = $responseData['id_token'];
+            update_option('bkash_id_token', $this->token);
+        } else {
+            $this->token = null;
+        }
     }
 
     public function createPayment($amount, $currency = 'BDT') {
@@ -204,8 +242,12 @@ class BkashPGW {
         curl_close($ch);
 
         $responseData = json_decode($response, true);
-        $this->token = $responseData['id_token'];
-        update_option('bkash_id_token', $this->token);
+        if (isset($responseData['id_token'])) {
+            $this->token = $responseData['id_token'];
+            update_option('bkash_id_token', $this->token);
+        } else {
+            $this->token = null;
+        }
     }
 }
 
