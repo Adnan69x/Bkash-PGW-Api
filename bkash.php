@@ -8,22 +8,21 @@ Author:      ADNANiTUNE
 Author URI:  https://t.me/ADNANiTUNE
 License:     GPL2
 */
-
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-add_action('plugins_loaded', 'initialize_kash_pgw_live_api');
+add_action('plugins_loaded', 'initialize_bkash_pgw_live_api');
 
-function initialize_kash_pgw_live_api() {
+function initialize_bkash_pgw_live_api() {
     if (class_exists('WC_Payment_Gateway')) {
 
-        class WC_Gateway_Kash_PGW_Live_API extends WC_Payment_Gateway {
+        class WC_Gateway_bKash_PGW_Live_API extends WC_Payment_Gateway {
             
             public function __construct() {
-                $this->id = 'kash_pgw_live_api';
-                $this->method_title = __('Kash PGW Live API Gateway', 'kash-pgw-live-api');
-                $this->method_description = __('Kash PGW Live API Gateway for WooCommerce', 'kash-pgw-live-api');
+                $this->id = 'bkash_pgw_live_api';
+                $this->method_title = __('bKash PGW Live API Gateway', 'bkash-pgw-live-api');
+                $this->method_description = __('bKash PGW Live API Gateway for WooCommerce', 'bkash-pgw-live-api');
                 $this->has_fields = true;
 
                 // Load settings.
@@ -42,64 +41,64 @@ function initialize_kash_pgw_live_api() {
 
                 // Add hooks.
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-                add_action('woocommerce_api_kash_pgw_live_api', array($this, 'handle_callback'));
+                add_action('woocommerce_api_bkash_pgw_live_api', array($this, 'handle_callback'));
             }
 
             public function init_form_fields() {
                 $this->form_fields = array(
                     'enabled' => array(
-                        'title'   => __('Enable/Disable', 'kash-pgw-live-api'),
+                        'title'   => __('Enable/Disable', 'bkash-pgw-live-api'),
                         'type'    => 'checkbox',
-                        'label'   => __('Enable Kash PGW Live API Gateway', 'kash-pgw-live-api'),
+                        'label'   => __('Enable bKash PGW Live API Gateway', 'bkash-pgw-live-api'),
                         'default' => 'yes',
                     ),
                     'gateway_title' => array(
-                        'title'       => __('Title', 'kash-pgw-live-api'),
+                        'title'       => __('Title', 'bkash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Title shown at checkout.', 'kash-pgw-live-api'),
-                        'default'     => __('Kash PGW Live API Gateway', 'kash-pgw-live-api'),
+                        'description' => __('Title shown at checkout.', 'bkash-pgw-live-api'),
+                        'default'     => __('bKash PGW Live API Gateway', 'bkash-pgw-live-api'),
                         'desc_tip'    => true,
                     ),
                     'api_user' => array(
-                        'title'       => __('API Username', 'kash-pgw-live-api'),
+                        'title'       => __('API Username', 'bkash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Username for API access.', 'kash-pgw-live-api'),
+                        'description' => __('Username for API access.', 'bkash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'api_pass' => array(
-                        'title'       => __('API Password', 'kash-pgw-live-api'),
+                        'title'       => __('API Password', 'bkash-pgw-live-api'),
                         'type'        => 'password',
-                        'description' => __('Password for API access.', 'kash-pgw-live-api'),
+                        'description' => __('Password for API access.', 'bkash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'api_key' => array(
-                        'title'       => __('API Key', 'kash-pgw-live-api'),
+                        'title'       => __('API Key', 'bkash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('API key for authentication.', 'kash-pgw-live-api'),
+                        'description' => __('API key for authentication.', 'bkash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'api_secret' => array(
-                        'title'       => __('API Secret', 'kash-pgw-live-api'),
+                        'title'       => __('API Secret', 'bkash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('API secret for authentication.', 'kash-pgw-live-api'),
+                        'description' => __('API secret for authentication.', 'bkash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'token' => array(
-                        'title'       => __('API Token', 'kash-pgw-live-api'),
+                        'title'       => __('API Token', 'bkash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Token for API calls.', 'kash-pgw-live-api'),
+                        'description' => __('Token for API calls.', 'bkash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'payment_create' => array(
-                        'title'       => __('Create Payment', 'kash-pgw-live-api'),
+                        'title'       => __('Payment Creation', 'bkash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Create Payment endpoint.', 'kash-pgw-live-api'),
+                        'description' => __('Payment creation endpoint.', 'bkash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'payment_execute' => array(
-                        'title'       => __('Execute Payment', 'kash-pgw-live-api'),
+                        'title'       => __('Payment Execution', 'bkash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Execute Payment endpoint.', 'kash-pgw-live-api'),
+                        'description' => __('Payment execution endpoint.', 'bkash-pgw-live-api'),
                         'default'     => '',
                     ),
                 );
@@ -110,12 +109,15 @@ function initialize_kash_pgw_live_api() {
                 $payment_url = $this->generate_payment_url($order, $order_id);
 
                 if (!$payment_url) {
-                    wc_add_notice(__('Error processing checkout. Please try again.', 'kash-pgw-live-api'), 'error');
-                    return;
+                    wc_add_notice(__('Error processing checkout. Please try again.', 'bkash-pgw-live-api'), 'error');
+                    return array(
+                        'result'   => 'failure',
+                        'redirect' => ''
+                    );
                 }
 
-                $order->update_status('pending', __('Awaiting payment', 'kash-pgw-live-api'));
-                $order->add_meta_data('kash_pgw_live_api_payment_url', $payment_url);
+                $order->update_status('pending', __('Awaiting payment', 'bkash-pgw-live-api'));
+                $order->add_meta_data('bkash_pgw_live_api_payment_url', $payment_url);
                 $order->save();
 
                 return array(
@@ -155,6 +157,7 @@ function initialize_kash_pgw_live_api() {
                         $api_token = $response_body['id_token'];
                     } else {
                         error_log('Error: id_token not found in response');
+                        error_log('Response body: ' . wp_remote_retrieve_body($response));
                         return false;
                     }
 
@@ -168,8 +171,8 @@ function initialize_kash_pgw_live_api() {
 
                     $order_data = $order->get_data();
                     $data = array(
-                        'callbackURL' => get_option('siteurl') . '/wc-api/kash_pgw_live_api?order_id=' . $order_id,
-                        'mode' => '0001',
+                        'callbackURL' => get_option('siteurl') . '/wc-api/bkash_pgw_live_api?order_id=' . $order_id,
+                        'mode' => '0001', // Changed mode value
                         'amount' => $order_data['total'],
                         'currency' => 'BDT',
                         'intent' => 'sale',
@@ -192,6 +195,7 @@ function initialize_kash_pgw_live_api() {
                             return $response_body['bkashURL'];
                         } else {
                             error_log('Error: bkashURL not found in response');
+                            error_log('Response body: ' . wp_remote_retrieve_body($response));
                             return false;
                         }
                     }
@@ -205,11 +209,11 @@ function initialize_kash_pgw_live_api() {
 
                 $api_token = $this->get_option('token');
                 if (!$order) {
-                    wp_die(__('Invalid order.', 'kash-pgw-live-api'));
+                    wp_die(__('Invalid order.', 'bkash-pgw-live-api'));
                 }
 
                 if (!$this->verify_callback($_GET)) {
-                    wp_die(__('Invalid callback.', 'kash-pgw-live-api'));
+                    wp_die(__('Invalid callback.', 'bkash-pgw-live-api'));
                 }
 
                 if ($_GET['status'] == 'success') {
@@ -227,7 +231,7 @@ function initialize_kash_pgw_live_api() {
                         'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/execute',
                         array(
                             'method' => 'POST',
-                            'timeout' => 30,
+                            'timeout' => 20,
                             'redirection' => 5,
                             'httpversion' => '1.1',
                             'blocking' => true,
@@ -239,13 +243,19 @@ function initialize_kash_pgw_live_api() {
                     $this->update_option('payment_execute', wp_remote_retrieve_body($response));
                     if (is_wp_error($response)) {
                         error_log('Error executing payment: ' . $response->get_error_message());
-                        wp_die(__('Payment execution failed.', 'kash-pgw-live-api'));
+                        wp_die(__('Payment execution failed.', 'bkash-pgw-live-api'));
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
-                        $order->payment_complete();
-                        $order->add_order_note(__('Payment completed via Kash PGW Live API Gateway. Transaction ID: ' . $response_body['trxID'], 'kash-pgw-live-api'));
-                        wp_safe_redirect(site_url("/my-account/orders"));
-                        exit;
+                        if (isset($response_body['trxID'])) {
+                            $order->payment_complete();
+                            $order->add_order_note(__('Payment completed via bKash PGW Live API Gateway. Transaction ID: ' . $response_body['trxID'], 'bkash-pgw-live-api'));
+                            wp_safe_redirect(site_url("/my-account/orders"));
+                            exit;
+                        } else {
+                            error_log('Error: trxID not found in response');
+                            error_log('Response body: ' . wp_remote_retrieve_body($response));
+                            wp_die(__('Payment execution failed.', 'bkash-pgw-live-api'));
+                        }
                     }
                 }
             }
@@ -256,12 +266,12 @@ function initialize_kash_pgw_live_api() {
             }
         }
 
-        function add_kash_pgw_live_api_gateway_class($methods) {
-            $methods[] = 'WC_Gateway_Kash_PGW_Live_API';
+        function add_bkash_pgw_live_api_gateway_class($methods) {
+            $methods[] = 'WC_Gateway_bKash_PGW_Live_API';
             return $methods;
         }
 
-        add_filter('woocommerce_payment_gateways', 'add_kash_pgw_live_api_gateway_class');
+        add_filter('woocommerce_payment_gateways', 'add_bkash_pgw_live_api_gateway_class');
     }
 }
 ?>
