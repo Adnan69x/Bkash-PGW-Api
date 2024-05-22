@@ -1,10 +1,11 @@
+<?php
 /*
 Plugin Name: bKash PGW
 Plugin URI:  http://example.com/bkash-pgw
 Description: A plugin to integrate bKash PGW with WordPress.
 Version:     1.0
-Author:      Your Name
-Author URI:  http://example.com
+Author:      ADNANiTUNE
+Author URI:  https://t.me/ADNANiTUNE
 License:     GPL2
 */
 
@@ -253,4 +254,7 @@ class BkashPGW {
 }
 
 // Initialize the plugin
-$bkashPGW = new BkashPGW();
+if (class_exists('BkashPGW')) {
+    $bkashPGW = new BkashPGW();
+}
+?>
