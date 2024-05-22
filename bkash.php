@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: Bkash PGW Live API
-Plugin URI:  https://t.me/ADNANiTUNE
+Plugin Name: BKash PGW Live API
+Details URI:  https://www.bkash.com/en/page/tokenized_checkout
 Description: Integrate bKash payment gateway with WordPress and WooCommerce.
 Version:     1.0
 Author:      ADNANiTUNE
-Author URI:  https://t.me/Adnan8368
+Author URI:  https://t.me/ADNANiTUNE
 License:     GPL2
 */
 
@@ -13,17 +13,17 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-add_action('plugins_loaded', 'init_custom_bkash_gateway');
+add_action('plugins_loaded', 'initialize_kash_pgw_live_api');
 
-function init_custom_bkash_gateway() {
+function initialize_kash_pgw_live_api() {
     if (class_exists('WC_Payment_Gateway')) {
 
-        class WC_Gateway_Custom_bKash extends WC_Payment_Gateway {
+        class WC_Gateway_Kash_PGW_Live_API extends WC_Payment_Gateway {
             
             public function __construct() {
-                $this->id = 'custom_bkash';
-                $this->method_title = __('Bkash Sendbox Live API', 'custom-bkash');
-                $this->method_description = __('Bkash Sendbox Live API for WooCommerce', 'custom-bkash');
+                $this->id = 'kash_pgw_live_api';
+                $this->method_title = __('Kash PGW Live API Gateway', 'kash-pgw-live-api');
+                $this->method_description = __('Kash PGW Live API Gateway for WooCommerce', 'kash-pgw-live-api');
                 $this->has_fields = true;
 
                 // Load settings.
@@ -34,72 +34,72 @@ function init_custom_bkash_gateway() {
                 $this->title = $this->get_option('gateway_title');
                 $this->api_key = $this->get_option('api_key');
                 $this->api_secret = $this->get_option('api_secret');
-                $this->api_username = $this->get_option('api_username');
-                $this->api_password = $this->get_option('api_password');
-                $this->api_token = $this->get_option('api_token');
-                $this->create_payment = $this->get_option('create_payment');
-                $this->execute_payment = $this->get_option('execute_payment');
+                $this->api_user = $this->get_option('api_user');
+                $this->api_pass = $this->get_option('api_pass');
+                $this->token = $this->get_option('token');
+                $this->payment_create = $this->get_option('payment_create');
+                $this->payment_execute = $this->get_option('payment_execute');
 
                 // Add hooks.
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-                add_action('woocommerce_api_custom_bkash', array($this, 'callback_handler'));
+                add_action('woocommerce_api_kash_pgw_live_api', array($this, 'handle_callback'));
             }
 
             public function init_form_fields() {
                 $this->form_fields = array(
                     'enabled' => array(
-                        'title'   => __('Enable/Disable', 'custom-bkash'),
+                        'title'   => __('Enable/Disable', 'kash-pgw-live-api'),
                         'type'    => 'checkbox',
-                        'label'   => __('Enable Bkash Sendbox Live API', 'custom-bkash'),
+                        'label'   => __('Enable Kash PGW Live API Gateway', 'kash-pgw-live-api'),
                         'default' => 'yes',
                     ),
                     'gateway_title' => array(
-                        'title'       => __('Title', 'custom-bkash'),
+                        'title'       => __('Title', 'kash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Title shown at checkout.', 'custom-bkash'),
-                        'default'     => __('Bkash Sendbox Live API', 'custom-bkash'),
+                        'description' => __('Title shown at checkout.', 'kash-pgw-live-api'),
+                        'default'     => __('Kash PGW Live API Gateway', 'kash-pgw-live-api'),
                         'desc_tip'    => true,
                     ),
-                    'api_username' => array(
-                        'title'       => __('API Username', 'custom-bkash'),
+                    'api_user' => array(
+                        'title'       => __('API Username', 'kash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Username for API access.', 'custom-bkash'),
+                        'description' => __('Username for API access.', 'kash-pgw-live-api'),
                         'default'     => '',
                     ),
-                    'api_password' => array(
-                        'title'       => __('API Password', 'custom-bkash'),
+                    'api_pass' => array(
+                        'title'       => __('API Password', 'kash-pgw-live-api'),
                         'type'        => 'password',
-                        'description' => __('Password for API access.', 'custom-bkash'),
+                        'description' => __('Password for API access.', 'kash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'api_key' => array(
-                        'title'       => __('API Key', 'custom-bkash'),
+                        'title'       => __('API Key', 'kash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('API key for authentication.', 'custom-bkash'),
+                        'description' => __('API key for authentication.', 'kash-pgw-live-api'),
                         'default'     => '',
                     ),
                     'api_secret' => array(
-                        'title'       => __('API Secret', 'custom-bkash'),
+                        'title'       => __('API Secret', 'kash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('API secret for authentication.', 'custom-bkash'),
+                        'description' => __('API secret for authentication.', 'kash-pgw-live-api'),
                         'default'     => '',
                     ),
-                    'api_token' => array(
-                        'title'       => __('API Token', 'custom-bkash'),
+                    'token' => array(
+                        'title'       => __('API Token', 'kash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Token for API calls.', 'custom-bkash'),
+                        'description' => __('Token for API calls.', 'kash-pgw-live-api'),
                         'default'     => '',
                     ),
-                    'create_payment' => array(
-                        'title'       => __('Payment Creation', 'custom-bkash'),
+                    'payment_create' => array(
+                        'title'       => __('Create Payment', 'kash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Payment creation endpoint.', 'custom-bkash'),
+                        'description' => __('Create Payment endpoint.', 'kash-pgw-live-api'),
                         'default'     => '',
                     ),
-                    'execute_payment' => array(
-                        'title'       => __('Payment Execution', 'custom-bkash'),
+                    'payment_execute' => array(
+                        'title'       => __('Execute Payment', 'kash-pgw-live-api'),
                         'type'        => 'text',
-                        'description' => __('Payment execution endpoint.', 'custom-bkash'),
+                        'description' => __('Execute Payment endpoint.', 'kash-pgw-live-api'),
                         'default'     => '',
                     ),
                 );
@@ -107,15 +107,15 @@ function init_custom_bkash_gateway() {
 
             public function process_payment($order_id) {
                 $order = wc_get_order($order_id);
-                $payment_url = $this->create_payment_url($order, $order_id);
+                $payment_url = $this->generate_payment_url($order, $order_id);
 
                 if (!$payment_url) {
-                    wc_add_notice(__('Error processing checkout. Please try again.', 'custom-bkash'), 'error');
+                    wc_add_notice(__('Error processing checkout. Please try again.', 'kash-pgw-live-api'), 'error');
                     return;
                 }
 
-                $order->update_status('pending', __('Awaiting payment', 'custom-bkash'));
-                $order->add_meta_data('custom_bkash_payment_url', $payment_url);
+                $order->update_status('pending', __('Awaiting payment', 'kash-pgw-live-api'));
+                $order->add_meta_data('kash_pgw_live_api_payment_url', $payment_url);
                 $order->save();
 
                 return array(
@@ -124,16 +124,16 @@ function init_custom_bkash_gateway() {
                 );
             }
 
-            public function create_payment_url($order, $order_id) {
-                $username = $this->get_option('api_username');
-                $password = $this->get_option('api_password');
+            public function generate_payment_url($order, $order_id) {
+                $api_user = $this->get_option('api_user');
+                $api_pass = $this->get_option('api_pass');
                 $api_key = $this->get_option('api_key');
                 $api_secret = $this->get_option('api_secret');
 
                 $headers = array(
                     'Content-Type' => 'application/json',
-                    'username' => $username,
-                    'password' => $password
+                    'username' => $api_user,
+                    'password' => $api_pass
                 );
 
                 $data = array(
@@ -158,7 +158,7 @@ function init_custom_bkash_gateway() {
                         return false;
                     }
 
-                    $this->update_option('api_token', $api_token);
+                    $this->update_option('token', $api_token);
 
                     $headers = array(
                         'Authorization' => 'Bearer ' . $api_token,
@@ -168,8 +168,8 @@ function init_custom_bkash_gateway() {
 
                     $order_data = $order->get_data();
                     $data = array(
-                        'callbackURL' => get_option('siteurl') . '/wc-api/custom_bkash?order_id=' . $order_id,
-                        'mode' => '0011',
+                        'callbackURL' => get_option('siteurl') . '/wc-api/kash_pgw_live_api?order_id=' . $order_id,
+                        'mode' => '0001',
                         'amount' => $order_data['total'],
                         'currency' => 'BDT',
                         'intent' => 'sale',
@@ -188,7 +188,7 @@ function init_custom_bkash_gateway() {
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
                         if (isset($response_body['bkashURL'])) {
-                            $this->update_option('create_payment', wp_remote_retrieve_body($response));
+                            $this->update_option('payment_create', wp_remote_retrieve_body($response));
                             return $response_body['bkashURL'];
                         } else {
                             error_log('Error: bkashURL not found in response');
@@ -198,23 +198,23 @@ function init_custom_bkash_gateway() {
                 }
             }
 
-            public function callback_handler() {
+            public function handle_callback() {
                 $api_key = $this->get_option('api_key');
                 $order_id = $_GET['order_id'];
                 $order = wc_get_order($order_id);
 
-                $api_token = $this->get_option('api_token');
+                $api_token = $this->get_option('token');
                 if (!$order) {
-                    wp_die(__('Invalid order.', 'custom-bkash'));
+                    wp_die(__('Invalid order.', 'kash-pgw-live-api'));
                 }
 
                 if (!$this->verify_callback($_GET)) {
-                    wp_die(__('Invalid callback.', 'custom-bkash'));
+                    wp_die(__('Invalid callback.', 'kash-pgw-live-api'));
                 }
 
                 if ($_GET['status'] == 'success') {
                     $headers = array(
-                        'Authorization' => $api_token,
+                        'Authorization' => 'Bearer ' . $api_token,
                         'X-APP-Key' => $api_key,
                         'Content-Type' => 'application/json',
                     );
@@ -227,7 +227,7 @@ function init_custom_bkash_gateway() {
                         'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/execute',
                         array(
                             'method' => 'POST',
-                            'timeout' => 20,
+                            'timeout' => 30,
                             'redirection' => 5,
                             'httpversion' => '1.1',
                             'blocking' => true,
@@ -236,14 +236,14 @@ function init_custom_bkash_gateway() {
                         )
                     );
 
-                    $this->update_option('execute_payment', wp_remote_retrieve_body($response));
+                    $this->update_option('payment_execute', wp_remote_retrieve_body($response));
                     if (is_wp_error($response)) {
                         error_log('Error executing payment: ' . $response->get_error_message());
-                        wp_die(__('Payment execution failed.', 'custom-bkash'));
+                        wp_die(__('Payment execution failed.', 'kash-pgw-live-api'));
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
                         $order->payment_complete();
-                        $order->add_order_note(__('Payment completed via Bkash Sendbox Live API. Transaction ID: ' . $response_body['trxID'], 'custom-bkash'));
+                        $order->add_order_note(__('Payment completed via Kash PGW Live API Gateway. Transaction ID: ' . $response_body['trxID'], 'kash-pgw-live-api'));
                         wp_safe_redirect(site_url("/my-account/orders"));
                         exit;
                     }
@@ -256,12 +256,12 @@ function init_custom_bkash_gateway() {
             }
         }
 
-        function add_custom_bkash_gateway_class($methods) {
-            $methods[] = 'WC_Gateway_Custom_bKash';
+        function add_kash_pgw_live_api_gateway_class($methods) {
+            $methods[] = 'WC_Gateway_Kash_PGW_Live_API';
             return $methods;
         }
 
-        add_filter('woocommerce_payment_gateways', 'add_custom_bkash_gateway_class');
+        add_filter('woocommerce_payment_gateways', 'add_kash_pgw_live_api_gateway_class');
     }
 }
 ?>
