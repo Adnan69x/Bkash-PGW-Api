@@ -22,8 +22,8 @@ function init_custom_bkash_gateway() {
             
             public function __construct() {
                 $this->id = 'custom_bkash';
-                $this->method_title = __('Custom bKash Gateway', 'custom-bkash');
-                $this->method_description = __('Custom bKash Gateway for WooCommerce', 'custom-bkash');
+                $this->method_title = __('Bkash Sendbox Live API', 'custom-bkash');
+                $this->method_description = __('Bkash Sendbox Live API for WooCommerce', 'custom-bkash');
                 $this->has_fields = true;
 
                 // Load settings.
@@ -37,8 +37,8 @@ function init_custom_bkash_gateway() {
                 $this->api_username = $this->get_option('api_username');
                 $this->api_password = $this->get_option('api_password');
                 $this->api_token = $this->get_option('api_token');
-                $this->payment_creation = $this->get_option('payment_creation');
-                $this->payment_execution = $this->get_option('payment_execution');
+                $this->create_payment = $this->get_option('create_payment');
+                $this->execute_payment = $this->get_option('execute_payment');
 
                 // Add hooks.
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
@@ -50,14 +50,14 @@ function init_custom_bkash_gateway() {
                     'enabled' => array(
                         'title'   => __('Enable/Disable', 'custom-bkash'),
                         'type'    => 'checkbox',
-                        'label'   => __('Enable Custom bKash Gateway', 'custom-bkash'),
+                        'label'   => __('Enable Bkash Sendbox Live API', 'custom-bkash'),
                         'default' => 'yes',
                     ),
                     'gateway_title' => array(
                         'title'       => __('Title', 'custom-bkash'),
                         'type'        => 'text',
                         'description' => __('Title shown at checkout.', 'custom-bkash'),
-                        'default'     => __('Custom bKash Gateway', 'custom-bkash'),
+                        'default'     => __('Bkash Sendbox Live API', 'custom-bkash'),
                         'desc_tip'    => true,
                     ),
                     'api_username' => array(
@@ -90,13 +90,13 @@ function init_custom_bkash_gateway() {
                         'description' => __('Token for API calls.', 'custom-bkash'),
                         'default'     => '',
                     ),
-                    'payment_creation' => array(
+                    'create_payment' => array(
                         'title'       => __('Payment Creation', 'custom-bkash'),
                         'type'        => 'text',
                         'description' => __('Payment creation endpoint.', 'custom-bkash'),
                         'default'     => '',
                     ),
-                    'payment_execution' => array(
+                    'execute_payment' => array(
                         'title'       => __('Payment Execution', 'custom-bkash'),
                         'type'        => 'text',
                         'description' => __('Payment execution endpoint.', 'custom-bkash'),
@@ -188,7 +188,7 @@ function init_custom_bkash_gateway() {
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
                         if (isset($response_body['bkashURL'])) {
-                            $this->update_option('payment_creation', wp_remote_retrieve_body($response));
+                            $this->update_option('create_payment', wp_remote_retrieve_body($response));
                             return $response_body['bkashURL'];
                         } else {
                             error_log('Error: bkashURL not found in response');
@@ -236,14 +236,14 @@ function init_custom_bkash_gateway() {
                         )
                     );
 
-                    $this->update_option('payment_execution', wp_remote_retrieve_body($response));
+                    $this->update_option('execute_payment', wp_remote_retrieve_body($response));
                     if (is_wp_error($response)) {
                         error_log('Error executing payment: ' . $response->get_error_message());
                         wp_die(__('Payment execution failed.', 'custom-bkash'));
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
                         $order->payment_complete();
-                        $order->add_order_note(__('Payment completed via Custom bKash Gateway. Transaction ID: ' . $response_body['trxID'], 'custom-bkash'));
+                        $order->add_order_note(__('Payment completed via Bkash Sendbox Live API. Transaction ID: ' . $response_body['trxID'], 'custom-bkash'));
                         wp_safe_redirect(site_url("/my-account/orders"));
                         exit;
                     }
