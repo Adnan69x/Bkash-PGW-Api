@@ -1,4 +1,3 @@
-<?php
 /*
 Plugin Name: bKash PGW
 Plugin URI:  http://example.com/bkash-pgw
@@ -116,7 +115,8 @@ class BkashPGW {
                 $amount = sanitize_text_field($_POST['bkash_payment_amount']);
                 $currency = sanitize_text_field($_POST['bkash_payment_currency']);
                 $paymentResponse = $this->createPayment($amount, $currency);
-                echo '<pre>' . print_r($paymentResponse, true) . '</pre>';
+                echo '<h3>Generated JSON for Create Payment</h3>';
+                echo '<pre>' . json_encode($paymentResponse, JSON_PRETTY_PRINT) . '</pre>';
             }
             ?>
 
@@ -130,7 +130,8 @@ class BkashPGW {
             if (isset($_POST['bkash_execute_payment'])) {
                 $paymentID = sanitize_text_field($_POST['bkash_payment_id']);
                 $executeResponse = $this->executePayment($paymentID);
-                echo '<pre>' . print_r($executeResponse, true) . '</pre>';
+                echo '<h3>Generated JSON for Execute Payment</h3>';
+                echo '<pre>' . json_encode($executeResponse, JSON_PRETTY_PRINT) . '</pre>';
             }
             ?>
         </div>
@@ -253,4 +254,3 @@ class BkashPGW {
 
 // Initialize the plugin
 $bkashPGW = new BkashPGW();
-?>
