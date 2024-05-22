@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: Custom bKash Integration
-Plugin URI:  http://example.com/custom-bkash-integration
+Plugin Name: Bkash PGW Live API
+Plugin URI:  https://t.me/ADNANiTUNE
 Description: Integrate bKash payment gateway with WordPress and WooCommerce.
 Version:     1.0
-Author:      Your Name
-Author URI:  http://example.com
+Author:      ADNANiTUNE
+Author URI:  https://t.me/Adnan8368
 License:     GPL2
 */
 
