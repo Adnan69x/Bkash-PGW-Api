@@ -4,8 +4,8 @@ Plugin Name: Custom bKash Integration
 Plugin URI:  http://example.com/custom-bkash-integration
 Description: Integrate bKash payment gateway with WordPress and WooCommerce.
 Version:     1.0
-Author:      ADNANiTUNE
-Author URI:  https://t.me/ADNANiTUNE
+Author:      Your Name
+Author URI:  http://example.com
 License:     GPL2
 */
 
@@ -109,6 +109,11 @@ function init_custom_bkash_gateway() {
                 $order = wc_get_order($order_id);
                 $payment_url = $this->create_payment_url($order, $order_id);
 
+                if (!$payment_url) {
+                    wc_add_notice(__('Error processing checkout. Please try again.', 'custom-bkash'), 'error');
+                    return;
+                }
+
                 $order->update_status('pending', __('Awaiting payment', 'custom-bkash'));
                 $order->add_meta_data('custom_bkash_payment_url', $payment_url);
                 $order->save();
@@ -126,15 +131,14 @@ function init_custom_bkash_gateway() {
                 $api_secret = $this->get_option('api_secret');
 
                 $headers = array(
-                    'accept' => 'application/json',
-                    'content-type' => 'application/json',
-                    'password' => $password,
-                    'username' => $username
+                    'Content-Type' => 'application/json',
+                    'username' => $username,
+                    'password' => $password
                 );
 
                 $data = array(
-                    'api_key' => $api_key,
-                    'api_secret' => $api_secret
+                    'app_key' => $api_key,
+                    'app_secret' => $api_secret
                 );
 
                 $response = wp_remote_post('https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant', array(
@@ -143,18 +147,23 @@ function init_custom_bkash_gateway() {
                 ));
 
                 if (is_wp_error($response)) {
-                    return '';
+                    error_log('Error granting token: ' . $response->get_error_message());
+                    return false;
                 } else {
-                    $response_body = json_decode(wp_remote_retrieve_body($response));
-                    $api_token = $response_body->id_token;
+                    $response_body = json_decode(wp_remote_retrieve_body($response), true);
+                    if (isset($response_body['id_token'])) {
+                        $api_token = $response_body['id_token'];
+                    } else {
+                        error_log('Error: id_token not found in response');
+                        return false;
+                    }
 
                     $this->update_option('api_token', $api_token);
 
                     $headers = array(
                         'Authorization' => 'Bearer ' . $api_token,
                         'X-APP-Key' => $api_key,
-                        'accept' => 'application/json',
-                        'content-type' => 'application/json'
+                        'Content-Type' => 'application/json'
                     );
 
                     $order_data = $order->get_data();
@@ -174,11 +183,17 @@ function init_custom_bkash_gateway() {
                     ));
 
                     if (is_wp_error($response)) {
-                        return '';
+                        error_log('Error creating payment: ' . $response->get_error_message());
+                        return false;
                     } else {
-                        $response_body = json_decode(wp_remote_retrieve_body($response));
-                        $this->update_option('payment_creation', wp_remote_retrieve_body($response));
-                        return $response_body->bkashURL;
+                        $response_body = json_decode(wp_remote_retrieve_body($response), true);
+                        if (isset($response_body['bkashURL'])) {
+                            $this->update_option('payment_creation', wp_remote_retrieve_body($response));
+                            return $response_body['bkashURL'];
+                        } else {
+                            error_log('Error: bkashURL not found in response');
+                            return false;
+                        }
                     }
                 }
             }
@@ -201,8 +216,7 @@ function init_custom_bkash_gateway() {
                     $headers = array(
                         'Authorization' => $api_token,
                         'X-APP-Key' => $api_key,
-                        'accept' => 'application/json',
-                        'content-type' => 'application/json',
+                        'Content-Type' => 'application/json',
                     );
 
                     $body = array(
@@ -219,18 +233,17 @@ function init_custom_bkash_gateway() {
                             'blocking' => true,
                             'headers' => $headers,
                             'body' => json_encode($body),
-                            'cookies' => array()
                         )
                     );
 
                     $this->update_option('payment_execution', wp_remote_retrieve_body($response));
                     if (is_wp_error($response)) {
-                        $error = new WP_Error(400, $data);
-                        wp_send_json_error($error);
+                        error_log('Error executing payment: ' . $response->get_error_message());
+                        wp_die(__('Payment execution failed.', 'custom-bkash'));
                     } else {
-                        $response_body = json_decode(wp_remote_retrieve_body($response));
+                        $response_body = json_decode(wp_remote_retrieve_body($response), true);
                         $order->payment_complete();
-                        $order->add_order_note(__('Payment completed via Custom bKash Gateway. Transaction ID: ' . $response_body->trxID, 'custom-bkash'));
+                        $order->add_order_note(__('Payment completed via Custom bKash Gateway. Transaction ID: ' . $response_body['trxID'], 'custom-bkash'));
                         wp_safe_redirect(site_url("/my-account/orders"));
                         exit;
                     }
@@ -238,6 +251,7 @@ function init_custom_bkash_gateway() {
             }
 
             public function verify_callback($data) {
+                // Implement any additional callback verification logic here
                 return true;
             }
         }
