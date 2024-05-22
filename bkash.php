@@ -8,6 +8,7 @@ Author:      ADNANiTUNE
 Author URI:  https://t.me/ADNANiTUNE
 License:     GPL2
 */
+
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
@@ -110,6 +111,7 @@ function initialize_bkash_pgw_live_api() {
 
                 if (!$payment_url) {
                     wc_add_notice(__('Error processing checkout. Please try again.', 'bkash-pgw-live-api'), 'error');
+                    error_log('Error generating payment URL for order ' . $order_id);
                     return array(
                         'result'   => 'failure',
                         'redirect' => ''
@@ -149,14 +151,14 @@ function initialize_bkash_pgw_live_api() {
                 ));
 
                 if (is_wp_error($response)) {
-                    error_log('Error granting token: ' . $response->get_error_message());
+                    error_log('Error granting token for order ' . $order_id . ': ' . $response->get_error_message());
                     return false;
                 } else {
                     $response_body = json_decode(wp_remote_retrieve_body($response), true);
                     if (isset($response_body['id_token'])) {
                         $api_token = $response_body['id_token'];
                     } else {
-                        error_log('Error: id_token not found in response');
+                        error_log('Error: id_token not found in response for order ' . $order_id);
                         error_log('Response body: ' . wp_remote_retrieve_body($response));
                         return false;
                     }
@@ -186,7 +188,7 @@ function initialize_bkash_pgw_live_api() {
                     ));
 
                     if (is_wp_error($response)) {
-                        error_log('Error creating payment: ' . $response->get_error_message());
+                        error_log('Error creating payment for order ' . $order_id . ': ' . $response->get_error_message());
                         return false;
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
@@ -194,7 +196,7 @@ function initialize_bkash_pgw_live_api() {
                             $this->update_option('payment_create', wp_remote_retrieve_body($response));
                             return $response_body['bkashURL'];
                         } else {
-                            error_log('Error: bkashURL not found in response');
+                            error_log('Error: bkashURL not found in response for order ' . $order_id);
                             error_log('Response body: ' . wp_remote_retrieve_body($response));
                             return false;
                         }
@@ -242,7 +244,7 @@ function initialize_bkash_pgw_live_api() {
 
                     $this->update_option('payment_execute', wp_remote_retrieve_body($response));
                     if (is_wp_error($response)) {
-                        error_log('Error executing payment: ' . $response->get_error_message());
+                        error_log('Error executing payment for order ' . $order_id . ': ' . $response->get_error_message());
                         wp_die(__('Payment execution failed.', 'bkash-pgw-live-api'));
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
@@ -252,7 +254,7 @@ function initialize_bkash_pgw_live_api() {
                             wp_safe_redirect(site_url("/my-account/orders"));
                             exit;
                         } else {
-                            error_log('Error: trxID not found in response');
+                            error_log('Error: trxID not found in response for order ' . $order_id);
                             error_log('Response body: ' . wp_remote_retrieve_body($response));
                             wp_die(__('Payment execution failed.', 'bkash-pgw-live-api'));
                         }
