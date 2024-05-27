@@ -19,7 +19,7 @@ function initialize_bkash_pgw_live_api() {
     if (class_exists('WC_Payment_Gateway')) {
 
         class WC_Gateway_bKash_PGW_Live_API extends WC_Payment_Gateway {
-            
+
             public function __construct() {
                 $this->id = 'bkash_pgw_live_api';
                 $this->method_title = __('bKash PGW Live API Gateway', 'bkash-pgw-live-api');
@@ -174,7 +174,7 @@ function initialize_bkash_pgw_live_api() {
                     $order_data = $order->get_data();
                     $data = array(
                         'callbackURL' => get_option('siteurl') . '/wc-api/bkash_pgw_live_api?order_id=' . $order_id,
-                        'mode' => '0001', // Changed mode value
+                        'mode' => '0000', // Ensure this is the correct mode
                         'amount' => $order_data['total'],
                         'currency' => 'BDT',
                         'intent' => 'sale',
@@ -193,7 +193,6 @@ function initialize_bkash_pgw_live_api() {
                     } else {
                         $response_body = json_decode(wp_remote_retrieve_body($response), true);
                         if (isset($response_body['bkashURL'])) {
-                            $this->update_option('payment_create', wp_remote_retrieve_body($response));
                             return $response_body['bkashURL'];
                         } else {
                             error_log('Error: bkashURL not found in response for order ' . $order_id);
@@ -242,7 +241,6 @@ function initialize_bkash_pgw_live_api() {
                         )
                     );
 
-                    $this->update_option('payment_execute', wp_remote_retrieve_body($response));
                     if (is_wp_error($response)) {
                         error_log('Error executing payment for order ' . $order_id . ': ' . $response->get_error_message());
                         wp_die(__('Payment execution failed.', 'bkash-pgw-live-api'));
@@ -251,7 +249,7 @@ function initialize_bkash_pgw_live_api() {
                         if (isset($response_body['trxID'])) {
                             $order->payment_complete();
                             $order->add_order_note(__('Payment completed via bKash PGW Live API Gateway. Transaction ID: ' . $response_body['trxID'], 'bkash-pgw-live-api'));
-                            wp_safe_redirect(site_url("/my-account/orders"));
+                            wp_safe_redirect($this->get_return_url($order));
                             exit;
                         } else {
                             error_log('Error: trxID not found in response for order ' . $order_id);
@@ -259,6 +257,9 @@ function initialize_bkash_pgw_live_api() {
                             wp_die(__('Payment execution failed.', 'bkash-pgw-live-api'));
                         }
                     }
+                } else {
+                    error_log('Error: payment status not success for order ' . $order_id);
+                    wp_die(__('Payment failed.', 'bkash-pgw-live-api'));
                 }
             }
 
